@@ -11,7 +11,7 @@ Play it at **[ernkerr.github.io/type-a-book](https://ernkerr.github.io/type-a-bo
 - A wrong key strikes in red and you try again. There's no backspace, like a real typewriter.
 - Each chapter starts a new sheet. A full sheet comes out of the machine and lands on the stack of pages beside it.
 - Finishing a chapter gets you an index card, stamped with the date: the words you typed, how long it took, and your speed.
-- Your place is saved in your browser. Books you've started wear a ribbon bookmark on the shelf, and the top of the page takes you back to the last one.
+- Your place is saved in your browser. Hover a book you've started to see how far you are, and the top of the shelf takes you back to the last one.
 - On a phone, tap the paper to bring up the keyboard.
 
 No build step and no framework: an HTML page, a stylesheet and three JavaScript files. The typewriter sounds are made in the browser with the Web Audio API, so there are no recordings.

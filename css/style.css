@@ -147,7 +147,7 @@ button {
 }
 
 /* Each shelf scrolls sideways on its own when it's wider than the screen.
-   The top padding leaves room for ribbons and their labels. */
+   The top padding leaves room for the hover labels. */
 .shelf-scroll {
   overflow-x: auto;
   padding-top: 64px;
@@ -293,23 +293,7 @@ button {
   text-transform: uppercase;
 }
 
-/* A silk ribbon bookmark in books you've started; gold once typed. */
-.ribbon {
-  position: absolute;
-  top: -18px;
-  right: 24%;
-  z-index: 1;
-  width: 9px;
-  height: 52px;
-  background: linear-gradient(90deg, #8e1c16, #c8332a 45%, #9b211a);
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
-}
-
-.ribbon.done {
-  background: linear-gradient(90deg, #a37c34, #ecd08a 45%, #b58c3e);
-}
-
+/* How far along you are, on hover, for books you've started. */
 .tip {
   position: absolute;
   bottom: calc(100% + 30px);

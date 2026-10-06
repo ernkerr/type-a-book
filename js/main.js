@@ -140,7 +140,7 @@ function nextTypable(u) {
 const percent = () => Math.floor(((before[pos.u] + pos.c) / total) * 100);
 const chapterOf = (u) => loaded.get(meta.id).chapters[units[u].ch];
 
-// Your place, plus what the shelf shows on the book's ribbon.
+// Your place, plus how far along you are for the shelf to show.
 function save() {
   if (!meta || !units.length) return;
   const prev = store.get(saveKey(meta.id), {});
@@ -167,7 +167,7 @@ const progressOf = (id) => {
 // ---- The shelf ----
 
 // Thicker books get thicker spines, and heights vary a little, the way a
-// real shelf does. Books you've started wear a ribbon bookmark.
+// real shelf does. Hovering a book you've started shows how far you are.
 function spine(entry) {
   const btn = document.createElement("button");
   btn.type = "button";
@@ -206,7 +206,6 @@ function spine(entry) {
         : where(saved)
     : "";
   btn.innerHTML = `
-    ${saved ? `<span class="ribbon${saved.finished ? " done" : ""}" aria-hidden="true"></span>` : ""}
     ${saved ? `<span class="tip" aria-hidden="true">${tip}</span>` : ""}
     <span class="band top"></span>
     <span class="spine-title">${entry.spine.map((l) => `<span>${l}</span>`).join("")}</span>
