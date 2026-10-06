@@ -61,6 +61,8 @@ const els = {
   cardNext: $("#card-next"),
   cardShelf: $("#card-shelf"),
   cardTip: $("#card-tip"),
+  shareCover: $("#share-cover"),
+  cardShare: $("#card-share"),
 };
 
 const store = {
@@ -324,6 +326,11 @@ function showCover(entry, spineEl) {
   } else {
     els.coverProgress.textContent = "";
   }
+  if (linkNote) {
+    els.coverProgress.textContent += ` ${linkNote}`;
+    linkNote = "";
+  }
+  els.shareCover.hidden = !started || saved?.finished;
   els.start.textContent = started && !saved?.finished ? "Keep typing" : "Start typing";
   els.restart.hidden = !started;
   els.restart.textContent = "Start over";
@@ -792,6 +799,7 @@ function type(ch) {
       describe();
     }
     save();
+    keepSaves();
     if (units[pos.u].ch !== fromChapter) chapterDone(fromChapter);
   }
   if (session.right % 25 === 0) save();
@@ -862,6 +870,87 @@ function finish() {
   els.cardShelf.focus();
 }
 
+// ---- Your place, as a link ----
+
+// Progress lives in this browser. To carry it to another device, or keep it
+// somewhere safe, you can copy a link with your place in it: the book, the
+// paragraph and the letter. Nothing is stored anywhere else.
+const share = (button) => async () => {
+  if (!meta) return;
+  const url = new URL(location.pathname, location.origin);
+  url.searchParams.set("book", meta.id);
+  url.searchParams.set("u", String(pos.u));
+  url.searchParams.set("c", String(pos.c));
+  const label = button.textContent;
+  const done = (text) => {
+    button.textContent = text;
+    setTimeout(() => (button.textContent = label), 2200);
+  };
+  try {
+    if (coarse.matches && navigator.share) {
+      await navigator.share({ title: `${meta.title}, on Type a Book`, url: url.toString() });
+      done("Sent");
+    } else {
+      await navigator.clipboard.writeText(url.toString());
+      done("Link copied");
+    }
+  } catch (err) {
+    if (err?.name === "AbortError") return;
+    // No clipboard: show the link to copy by hand.
+    const field = document.createElement("input");
+    field.className = "share-field";
+    field.readOnly = true;
+    field.value = url.toString();
+    field.setAttribute("aria-label", "Link to your place");
+    button.replaceWith(field);
+    field.select();
+  }
+};
+els.shareCover.addEventListener("click", share(els.shareCover));
+els.cardShare.addEventListener("click", share(els.cardShare));
+if (coarse.matches && navigator.share) {
+  els.shareCover.textContent = els.cardShare.textContent = "Send a link to your place";
+}
+
+// Opening one of those links: the furthest place wins, so an old link can't
+// undo progress this browser has made since.
+let linkNote = "";
+async function openFromLink() {
+  const params = new URLSearchParams(location.search);
+  const id = params.get("book");
+  if (!id) return;
+  history.replaceState(null, "", location.pathname);
+  const entry = catalog.books.find((b) => b.id === id);
+  if (!entry) return;
+  const book = await load(id);
+  const linked = { u: Number(params.get("u")), c: Number(params.get("c")) };
+  const unit = toUnits(book)[linked.u];
+  if (unit && typable(unit) && Number.isInteger(linked.c) && linked.c >= 0 && linked.c <= unit.text.length) {
+    const saved = store.get(saveKey(id), null);
+    const ahead = !saved || saved.u < linked.u || (saved.u === linked.u && saved.c < linked.c);
+    if (ahead) {
+      store.set(saveKey(id), { ...saved, u: linked.u, c: linked.c, finished: false, at: Date.now() });
+    } else if (saved.u !== linked.u || saved.c !== linked.c) {
+      linkNote = "This browser was already further along than your link, so you'll pick up here.";
+    }
+  }
+  pick(entry);
+}
+
+// Browsers can clear a site's saved data to free up space, and Safari can
+// clear it after a week away. Asking for persistent storage makes that much
+// less likely. It's asked once, after your first finished line.
+let askedToKeep = false;
+async function keepSaves() {
+  if (askedToKeep || !navigator.storage?.persist) return;
+  askedToKeep = true;
+  try {
+    if (!(await navigator.storage.persisted())) await navigator.storage.persist();
+  } catch {
+    // Not available here; saves just stay best-effort.
+  }
+}
+
 // ---- Keys ----
 
 // Phones type with smart punctuation, so curly quotes and long dashes are
@@ -918,4 +1007,5 @@ fetch("books/index.json")
   .then((data) => {
     catalog = data;
     buildShelves();
+    openFromLink();
   });

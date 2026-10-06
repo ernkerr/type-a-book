@@ -12,6 +12,7 @@ Play it at **[ernkerr.github.io/type-a-book](https://ernkerr.github.io/type-a-bo
 - Each chapter starts a new sheet. A full sheet comes out of the machine and lands on the stack of pages beside it.
 - Finishing a chapter gets you an index card, stamped with the date: the words you typed, how long it took, and your speed.
 - Your place is saved in your browser. Hover a book you've started to see how far you are, and the top of the shelf takes you back to the last one.
+- There are no accounts. To carry your place to another device, or keep it safe, copy a link to your place from the book's cover or a chapter card (on a phone, send it). Opening it picks up right there; if that browser is already further along, it keeps the further place. The game also asks the browser to keep its saves, so they're less likely to be cleared.
 - On a phone, tap the paper to bring up the keyboard.
 
 No build step and no framework: an HTML page, a stylesheet and three JavaScript files. The typewriter sounds are made in the browser with the Web Audio API, so there are no recordings.

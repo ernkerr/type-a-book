@@ -537,6 +537,44 @@ button {
   color: var(--cream);
 }
 
+/* A quiet text button: the link to your place. */
+.share {
+  margin-top: 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--type);
+  font-size: 14px;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.share:hover {
+  color: var(--cream);
+}
+
+.index-card .share {
+  color: rgba(28, 25, 21, 0.6);
+}
+
+.index-card .share:hover {
+  color: var(--ink);
+}
+
+.share-field {
+  width: 100%;
+  margin-top: 14px;
+  padding: 8px 10px;
+  border: 1px solid rgba(239, 230, 210, 0.35);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.2);
+}
+
 @media (max-width: 680px) {
   .cover-dialog {
     flex-direction: column;
