@@ -97,21 +97,38 @@ button {
   color: var(--muted);
 }
 
-.bookcase {
-  width: min(560px, 100%);
+.shelves {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: min(920px, 100%);
+}
+
+/* Each shelf scrolls sideways on its own when it's wider than the screen. */
+.shelf-scroll {
+  overflow-x: auto;
+  padding-top: 22px;
+  scrollbar-width: thin;
+}
+
+.shelf-inner {
+  min-width: 100%;
+  width: max-content;
 }
 
 .books {
   display: flex;
   align-items: flex-end;
-  gap: 6px;
-  height: 300px;
-  padding: 0 36px;
+  justify-content: center;
+  gap: 4px;
+  min-height: 290px;
+  padding: 0 40px;
 }
 
-/* A brass bookend holding up the one book. */
+/* A brass bookend holding up each row. */
 .books::after {
   content: "";
+  flex: none;
   width: 16px;
   height: 128px;
   margin-left: 8px;
@@ -121,7 +138,8 @@ button {
 }
 
 .board {
-  height: 22px;
+  position: relative;
+  height: 24px;
   border-radius: 3px;
   background: linear-gradient(var(--wood-light), var(--wood) 30%, var(--wood-dark));
   box-shadow:
@@ -129,8 +147,27 @@ button {
     0 22px 34px -14px rgba(0, 0, 0, 0.8);
 }
 
+/* The shelf's little brass label. */
+.plaque {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 1px 10px 0;
+  border-radius: 2px;
+  font-family: var(--type);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  color: #3a2810;
+  background: linear-gradient(#e9cd85, #b8913f);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
 .note {
-  margin: -22px 0 0;
+  margin: 0;
   font-family: var(--type);
   color: var(--muted);
 }
@@ -138,6 +175,7 @@ button {
 .spine {
   --cloth: #8b2a22;
   --gilt: #d9b464;
+  flex: none;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -181,20 +219,28 @@ button {
   margin-bottom: 16px;
 }
 
+/* In vertical writing, a flex column lays each title line down the spine
+   as its own column, side by side. */
 .spine-title {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 2px;
   writing-mode: vertical-rl;
   font-family: var(--fell);
-  font-size: 17px;
+  font-size: var(--spine-fs, 17px);
+  white-space: nowrap;
   letter-spacing: 0.03em;
   line-height: 1.15;
 }
 
 .spine-author {
+  max-width: 100%;
+  overflow: hidden;
   font-family: var(--fell);
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  font-size: var(--name-fs, 10px);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
   text-transform: uppercase;
 }
 
@@ -271,6 +317,11 @@ button {
 .watch {
   width: 62px;
   margin: 8px 0 14px;
+}
+
+.rule {
+  width: 110px;
+  margin: 10px 0 16px;
 }
 
 .cover-author {
@@ -357,6 +408,16 @@ button {
 
   .cover {
     width: 200px;
+  }
+
+  .books {
+    justify-content: flex-start;
+    padding: 0 20px;
+  }
+
+  .plaque {
+    left: 20px;
+    transform: translateY(-50%);
   }
 
   .actions {

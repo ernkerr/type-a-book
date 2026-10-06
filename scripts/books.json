@@ -1,0 +1,340 @@
+{
+  "shelves": [
+    {
+      "name": "Adventure and science fiction",
+      "books": [
+        "time-machine",
+        "war-of-the-worlds",
+        "twenty-thousand-leagues",
+        "eighty-days",
+        "treasure-island",
+        "frankenstein",
+        "dracula",
+        "sherlock"
+      ]
+    },
+    {
+      "name": "Books everyone should read",
+      "books": [
+        "pride",
+        "gatsby",
+        "jane-eyre",
+        "great-expectations",
+        "dorian-gray",
+        "moby-dick",
+        "odyssey",
+        "meditations"
+      ]
+    },
+    {
+      "name": "Down the rabbit hole",
+      "books": [
+        "alice",
+        "looking-glass",
+        "oz",
+        "secret-garden"
+      ]
+    }
+  ],
+  "books": [
+    {
+      "id": "alice",
+      "title": "Alice's Adventures in Wonderland",
+      "spine": [
+        "Alice's Adventures",
+        "in Wonderland"
+      ],
+      "author": "Lewis Carroll",
+      "year": 1865,
+      "cloth": "#8b2a22",
+      "gilt": "#d9b464",
+      "emblem": "watch",
+      "heading": "^(?<label>CHAPTER [IVXLC]+\\.)$",
+      "titleNext": true,
+      "expect": 12
+    },
+    {
+      "id": "looking-glass",
+      "title": "Through the Looking-Glass",
+      "spine": [
+        "Through the",
+        "Looking-Glass"
+      ],
+      "author": "Lewis Carroll",
+      "year": 1871,
+      "cloth": "#2a5577",
+      "gilt": "#dcc07a",
+      "heading": "^(?<label>CHAPTER [IVXLC]+\\.)$",
+      "titleNext": true,
+      "expect": 12
+    },
+    {
+      "id": "oz",
+      "title": "The Wonderful Wizard of Oz",
+      "spine": [
+        "The Wonderful",
+        "Wizard of Oz"
+      ],
+      "author": "L. Frank Baum",
+      "year": 1900,
+      "cloth": "#2f6b3a",
+      "gilt": "#e2c56f",
+      "heading": "^(?<label>Chapter [IVXLC]+)$",
+      "titleNext": true,
+      "expect": 24
+    },
+    {
+      "id": "secret-garden",
+      "title": "The Secret Garden",
+      "spine": [
+        "The Secret Garden"
+      ],
+      "author": "Frances Hodgson Burnett",
+      "year": 1911,
+      "cloth": "#5f7236",
+      "gilt": "#e8d79a",
+      "heading": "^(?<label>CHAPTER [IVXLC]+\\.?)$",
+      "titleNext": true,
+      "expect": 27
+    },
+    {
+      "id": "time-machine",
+      "title": "The Time Machine",
+      "spine": [
+        "The Time Machine"
+      ],
+      "author": "H. G. Wells",
+      "year": 1895,
+      "cloth": "#2f4a5c",
+      "gilt": "#d6bb79",
+      "heading": "^(?<label>[IVXLC]+\\.|Epilogue)$",
+      "titleNext": true,
+      "expect": 17
+    },
+    {
+      "id": "war-of-the-worlds",
+      "title": "The War of the Worlds",
+      "spine": [
+        "The War",
+        "of the Worlds"
+      ],
+      "author": "H. G. Wells",
+      "year": 1898,
+      "cloth": "#5a1f1a",
+      "gilt": "#d9b464",
+      "heading": "^(?<label>[IVXLC]+\\.)$",
+      "titleNext": true,
+      "drop": "^BOOK (ONE|TWO)",
+      "expect": 27
+    },
+    {
+      "id": "twenty-thousand-leagues",
+      "title": "Twenty Thousand Leagues Under the Sea",
+      "spine": [
+        "Twenty Thousand Leagues",
+        "Under the Sea"
+      ],
+      "author": "Jules Verne",
+      "year": 1870,
+      "cloth": "#1f4d4a",
+      "gilt": "#d8bd7c",
+      "heading": "^(?<label>CHAPTER [IVXLC]+)$",
+      "titleNext": true,
+      "drop": "^PART (ONE|TWO)$",
+      "expect": 46
+    },
+    {
+      "id": "eighty-days",
+      "title": "Around the World in Eighty Days",
+      "spine": [
+        "Around the World",
+        "in Eighty Days"
+      ],
+      "author": "Jules Verne",
+      "year": 1873,
+      "cloth": "#a0682a",
+      "gilt": "#2a1a0c",
+      "heading": "^(?<label>CHAPTER [IVXLC]+\\.)$",
+      "titleNext": true,
+      "expect": 37,
+      "translator": "George M. Towle"
+    },
+    {
+      "id": "treasure-island",
+      "title": "Treasure Island",
+      "spine": [
+        "Treasure Island"
+      ],
+      "author": "Robert Louis Stevenson",
+      "year": 1883,
+      "cloth": "#2d3b2a",
+      "gilt": "#d9b464",
+      "heading": "^(?<label>[IVXLC]+)$",
+      "titleNext": true,
+      "drop": "^PART (ONE|TWO|THREE|FOUR|FIVE|SIX)--",
+      "expect": 34
+    },
+    {
+      "id": "frankenstein",
+      "title": "Frankenstein",
+      "spine": [
+        "Frankenstein"
+      ],
+      "author": "Mary Shelley",
+      "year": 1818,
+      "cloth": "#3a3d2c",
+      "gilt": "#cdb57a",
+      "heading": "^(?<label>(?:Letter|Chapter) \\d+)$",
+      "titleNext": false,
+      "expect": 28
+    },
+    {
+      "id": "dracula",
+      "title": "Dracula",
+      "spine": [
+        "Dracula"
+      ],
+      "author": "Bram Stoker",
+      "year": 1897,
+      "cloth": "#1b1a1d",
+      "gilt": "#c43b2e",
+      "heading": "^(?<label>CHAPTER [IVXLC]+)$",
+      "titleNext": true,
+      "stop": "^THE END$",
+      "expect": 27
+    },
+    {
+      "id": "sherlock",
+      "title": "The Adventures of Sherlock Holmes",
+      "spine": [
+        "The Adventures of",
+        "Sherlock Holmes"
+      ],
+      "author": "Arthur Conan Doyle",
+      "year": 1892,
+      "cloth": "#6b2b3a",
+      "gilt": "#dcc07a",
+      "heading": "^(?<label>[IVX]+\\.) (?<title>[A-Z][A-Z'\\u2019\\- ]+)$",
+      "titleNext": false,
+      "expect": 12
+    },
+    {
+      "id": "pride",
+      "title": "Pride and Prejudice",
+      "spine": [
+        "Pride and Prejudice"
+      ],
+      "author": "Jane Austen",
+      "year": 1813,
+      "cloth": "#d8ccb4",
+      "gilt": "#3a2a1e",
+      "heading": "^(?<label>(?:CHAPTER|Chapter) [IVXLC]+\\.?)\\]?$",
+      "titleNext": false,
+      "stop": "^CHISWICK PRESS",
+      "expect": 61
+    },
+    {
+      "id": "gatsby",
+      "title": "The Great Gatsby",
+      "spine": [
+        "The Great Gatsby"
+      ],
+      "author": "F. Scott Fitzgerald",
+      "year": 1925,
+      "cloth": "#13294b",
+      "gilt": "#e0c272",
+      "heading": "^(?<label>[IVX]+)$",
+      "titleNext": false,
+      "expect": 9
+    },
+    {
+      "id": "jane-eyre",
+      "title": "Jane Eyre",
+      "spine": [
+        "Jane Eyre"
+      ],
+      "author": "Charlotte Bronte",
+      "year": 1847,
+      "cloth": "#4a2f45",
+      "gilt": "#d9b464",
+      "heading": "^(?<label>CHAPTER [IVXLC]+)(?:—(?<title>.+))?$",
+      "titleNext": false,
+      "expect": 38
+    },
+    {
+      "id": "great-expectations",
+      "title": "Great Expectations",
+      "spine": [
+        "Great Expectations"
+      ],
+      "author": "Charles Dickens",
+      "year": 1861,
+      "cloth": "#3e4f3a",
+      "gilt": "#d9b464",
+      "heading": "^(?<label>Chapter [IVXLC]+\\.)$",
+      "titleNext": false,
+      "expect": 59
+    },
+    {
+      "id": "dorian-gray",
+      "title": "The Picture of Dorian Gray",
+      "spine": [
+        "The Picture of",
+        "Dorian Gray"
+      ],
+      "author": "Oscar Wilde",
+      "year": 1890,
+      "cloth": "#d4c7a6",
+      "gilt": "#2b2622",
+      "heading": "^(?<label>CHAPTER [IVXLC]+\\.)$",
+      "titleNext": false,
+      "expect": 20
+    },
+    {
+      "id": "moby-dick",
+      "title": "Moby-Dick",
+      "spine": [
+        "Moby-Dick"
+      ],
+      "author": "Herman Melville",
+      "year": 1851,
+      "cloth": "#22364a",
+      "gilt": "#d9b464",
+      "heading": "^(?<label>CHAPTER \\d+\\.|Epilogue)(?: (?<title>.+))?$",
+      "titleNext": false,
+      "expect": 136
+    },
+    {
+      "id": "odyssey",
+      "title": "The Odyssey",
+      "spine": [
+        "The Odyssey"
+      ],
+      "author": "Homer",
+      "translator": "Samuel Butler",
+      "year": -700,
+      "cloth": "#8a4b22",
+      "gilt": "#1e140c",
+      "heading": "^(?<label>BOOK [IVXL]+)$",
+      "titleNext": true,
+      "stop": "^FOOTNOTES:$",
+      "expect": 24
+    },
+    {
+      "id": "meditations",
+      "title": "Meditations",
+      "spine": [
+        "Meditations"
+      ],
+      "author": "Marcus Aurelius",
+      "translator": "Meric Casaubon",
+      "year": 180,
+      "cloth": "#4d4438",
+      "gilt": "#d9c48e",
+      "heading": "^(?<label>THE [A-Z]+ BOOK)$",
+      "titleNext": false,
+      "stop": "^APPENDIX$",
+      "expect": 12
+    }
+  ]
+}

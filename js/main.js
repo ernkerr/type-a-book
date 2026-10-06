@@ -1,22 +1,10 @@
 import { LINES_PER_PAGE, indexLines, layout, toUnits, typable } from "./book.js";
 import * as sound from "./sound.js";
 
-// The shelf. Each book is a public-domain text in books/, made with
-// scripts/prepare-book.mjs, and a cloth color for its spine and cover.
-const BOOKS = [
-  {
-    id: "alice",
-    file: "books/alice.json",
-    title: "Alice's Adventures in Wonderland",
-    spine: ["Alice's Adventures", "in Wonderland"],
-    author: "Lewis Carroll",
-    surname: "Carroll",
-    year: 1865,
-    cloth: "#8b2a22",
-    gilt: "#d9b464",
-    emblem: "watch",
-  },
-];
+// The shelves come from books/index.json, made by scripts/build-books.mjs:
+// each book is a public-domain text in books/<id>.json with a cloth color
+// for its spine and cover.
+let catalog = { shelves: [], books: [] };
 
 // The paper: side margins and the blank lines above and below the text,
 // in characters and lines.
@@ -28,7 +16,7 @@ const BELL_AT = 8; // the bell rings this many characters before the margin
 const $ = (sel) => document.querySelector(sel);
 const els = {
   shelf: $("#shelf"),
-  books: $("#books"),
+  shelves: $("#shelves"),
   cover: $("#cover"),
   coverArt: $("#cover-art"),
   coverTitle: $("#cover-title"),
@@ -78,7 +66,7 @@ const saveKey = (id) => `type-a-book:${id}`;
 // ---- State ----
 
 const loaded = new Map();
-let meta = null; // the BOOKS entry that's open
+let meta = null; // the catalog entry that's open
 let units = [];
 let lines = [];
 let findLine = () => -1;
@@ -96,8 +84,7 @@ let session = { right: 0, wrong: 0, ms: 0, last: 0 };
 
 async function load(id) {
   if (loaded.has(id)) return loaded.get(id);
-  const entry = BOOKS.find((b) => b.id === id);
-  const res = await fetch(entry.file);
+  const res = await fetch(`books/${id}.json`);
   const book = await res.json();
   loaded.set(id, book);
   return book;
@@ -106,6 +93,7 @@ async function load(id) {
 function open(entry, book) {
   meta = entry;
   units = toUnits(book);
+  lines = [];
   before = [];
   total = 0;
   units.forEach((unit, u) => {
@@ -134,20 +122,62 @@ function save() {
 
 // ---- The shelf and the cover ----
 
+// Thicker books get thicker spines, and heights vary a little, the way a
+// real shelf does.
 function spine(entry) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "spine";
-  btn.style.setProperty("--cloth", entry.cloth);
-  btn.style.setProperty("--gilt", entry.gilt);
+  const width = Math.round(32 + Math.sqrt(entry.words) / 11);
+  let h = 0;
+  for (const ch of entry.id) h = (h * 31 + ch.charCodeAt(0)) % 997;
+  const height = 236 + (h % 6) * 9;
+  // The title runs down the spine, a column per line, sized to fit between
+  // the gilt bands; the surname across the bottom, sized to fit the width.
+  const longest = Math.max(...entry.spine.map((l) => l.length));
+  const fs = Math.max(
+    10,
+    Math.min(17, (height - 124) / (longest * 0.53), (width - 10) / (entry.spine.length * 1.3)),
+  );
+  const surname = entry.author.split(" ").at(-1);
+  const ns = Math.max(7, Math.min(10, (width - 8) / (surname.length * 0.68)));
+  btn.style.cssText = [
+    `--cloth:${entry.cloth}`,
+    `--gilt:${entry.gilt}`,
+    `width:${width}px`,
+    `height:${height}px`,
+    `--spine-fs:${fs.toFixed(1)}px`,
+    `--name-fs:${ns.toFixed(1)}px`,
+  ].join(";");
+  btn.dataset.id = entry.id;
   btn.setAttribute("aria-label", `${entry.title} by ${entry.author}`);
   btn.innerHTML = `
     <span class="band top"></span>
     <span class="spine-title">${entry.spine.map((l) => `<span>${l}</span>`).join("")}</span>
-    <span class="spine-author">${entry.surname}</span>
+    <span class="spine-author">${surname}</span>
     <span class="band bottom"></span>`;
   btn.addEventListener("click", () => showCover(entry));
   return btn;
+}
+
+function buildShelves() {
+  els.shelves.innerHTML = "";
+  for (const shelf of catalog.shelves) {
+    const section = document.createElement("section");
+    section.className = "shelf";
+    section.setAttribute("aria-label", shelf.name);
+    section.innerHTML = `
+      <div class="shelf-scroll"><div class="shelf-inner">
+        <div class="books"></div>
+        <div class="board"><span class="plaque">${shelf.name}</span></div>
+      </div></div>`;
+    const row = section.querySelector(".books");
+    for (const id of shelf.books) {
+      const entry = catalog.books.find((b) => b.id === id);
+      if (entry) row.append(spine(entry));
+    }
+    els.shelves.append(section);
+  }
 }
 
 const WATCH = `
@@ -161,15 +191,22 @@ const WATCH = `
     <circle cx="40" cy="60" r="2.4" fill="currentColor" stroke="none" />
   </svg>`;
 
+// A gilt rule with a diamond, for books without their own emblem.
+const RULE = `
+  <svg class="rule" viewBox="0 0 120 20" fill="none" stroke="currentColor" stroke-width="1.6">
+    <path d="M4 10h42M74 10h42" />
+    <path d="M60 3l7 7-7 7-7-7z" fill="currentColor" stroke="none" />
+  </svg>`;
+
 const EMBLEMS = { watch: WATCH };
 
 function coverArt(entry) {
   return `
     <div class="cloth" style="--cloth:${entry.cloth};--gilt:${entry.gilt}">
       <div class="frame">
-        <p class="cover-small">${entry.spine[0]}</p>
-        <p class="cover-big">${entry.spine[1]}</p>
-        ${EMBLEMS[entry.emblem] ?? ""}
+        ${entry.spine.length > 1 ? `<p class="cover-small">${entry.spine[0]}</p>` : ""}
+        <p class="cover-big">${entry.spine.at(-1)}</p>
+        ${EMBLEMS[entry.emblem] ?? RULE}
         <p class="cover-author">${entry.author}</p>
       </div>
     </div>`;
@@ -182,7 +219,9 @@ async function showCover(entry) {
   const book = await load(entry.id);
   els.coverArt.innerHTML = coverArt(entry);
   els.coverTitle.textContent = entry.title;
-  els.coverByline.textContent = `${entry.author}, ${entry.year}`;
+  els.coverByline.textContent = entry.translator
+    ? `${entry.author}, translated by ${entry.translator}`
+    : `${entry.author}, ${entry.year}`;
   els.coverFacts.textContent = `${book.chapters.length} chapters, ${book.words.toLocaleString()} words`;
   const saved = store.get(saveKey(entry.id), null);
   open(entry, book);
@@ -190,10 +229,10 @@ async function showCover(entry) {
   if (saved?.finished) {
     els.coverProgress.textContent = "You've typed the whole book.";
   } else if (started) {
-    const ch = book.chapters[units[pos.u].ch];
+    const ch = pretty(book.chapters[units[pos.u].ch].label);
     els.coverProgress.textContent = percent()
-      ? `You're ${percent()}% in, on Chapter ${ch.number}.`
-      : `You've started Chapter ${ch.number}.`;
+      ? `You're ${percent()}% in, on ${ch}.`
+      : `You've started ${ch}.`;
   } else {
     els.coverProgress.textContent = "";
   }
@@ -254,7 +293,7 @@ function toShelf() {
   els.desk.hidden = true;
   els.done.hidden = true;
   els.shelf.hidden = false;
-  els.books.querySelector(".spine")?.focus();
+  els.shelves.querySelector(`.spine[data-id="${meta?.id}"]`)?.focus();
 }
 
 els.back.addEventListener("click", toShelf);
@@ -430,11 +469,25 @@ function describe() {
   els.reading.textContent = units[line.u].text.slice(line.start, line.end);
 }
 
+// Headings as the book prints them can shout ("THE FIRST BOOK") or be a bare
+// numeral ("IX"). The bar says them in sentence case: "The First Book",
+// "Chapter IX".
+const roman = /^[IVXLC]+\.?$/;
+function pretty(text) {
+  const plain = text.replace(/\.$/, "");
+  if (roman.test(plain)) return `Chapter ${plain}`;
+  if (plain !== plain.toUpperCase()) return plain;
+  return plain
+    .split(/(\s+|--)/)
+    .map((w) => (roman.test(w) ? w : w.charAt(0) + w.slice(1).toLowerCase()))
+    .join("");
+}
+
 function updateBar() {
   const unit = units[pos.u];
   const book = loaded.get(meta.id);
   const ch = book.chapters[unit.ch];
-  els.chapter.textContent = `Chapter ${ch.number}  ·  ${ch.title}`;
+  els.chapter.textContent = ch.title ? `${pretty(ch.label)}  ·  ${pretty(ch.title)}` : pretty(ch.label);
   const minutes = session.ms / 60000;
   const wpm = session.right >= 10 && minutes > 0 ? Math.round(session.right / 5 / minutes) : null;
   const tries = session.right + session.wrong;
@@ -611,5 +664,10 @@ document.addEventListener("visibilitychange", () => {
 
 // ---- Start ----
 
-for (const entry of BOOKS) els.books.append(spine(entry));
 buildKeys();
+fetch("books/index.json")
+  .then((res) => res.json())
+  .then((data) => {
+    catalog = data;
+    buildShelves();
+  });

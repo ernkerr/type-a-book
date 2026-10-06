@@ -17,17 +17,17 @@ No build step and no framework: an HTML page, a stylesheet and three JavaScript 
 
 ## Books
 
-Every book on the shelf is in the public domain. The first is *Alice's Adventures in Wonderland* by Lewis Carroll (1865).
+Twenty books on three shelves: adventure and science fiction (The Time Machine, The War of the Worlds, Twenty Thousand Leagues Under the Sea, Around the World in Eighty Days, Treasure Island, Frankenstein, Dracula, The Adventures of Sherlock Holmes), books everyone should read (Pride and Prejudice, The Great Gatsby, Jane Eyre, Great Expectations, The Picture of Dorian Gray, Moby-Dick, The Odyssey, Meditations), and a shelf of wonderlands (Alice's Adventures in Wonderland, Through the Looking-Glass, The Wonderful Wizard of Oz, The Secret Garden).
 
-`scripts/prepare-book.mjs` turns a plain-text book into `books/<id>.json`. It keeps only the book itself and converts it to what a typewriter has: straight quotes, `--` for dashes, and no italics. Verse keeps its line breaks.
+Every book is in the public domain. Newer books can't go on the shelf until their copyright runs out.
 
-```sh
-node scripts/prepare-book.mjs book.txt books/alice.json \
-  --id alice --title "Alice's Adventures in Wonderland" \
-  --author "Lewis Carroll" --year 1865
-```
+To add one:
 
-Then add the book to `BOOKS` in `js/main.js` with a cloth color for its spine.
+1. Save its plain text as `scripts/sources/<id>.txt` (not committed).
+2. Add it to `scripts/books.json`: its title, author, year, cloth color, which shelf it's on, a regular expression for its chapter headings, and how many chapters it should have.
+3. Run `node scripts/build-books.mjs` (or `node scripts/build-books.mjs <id>` for one book).
+
+The build keeps only the book itself: no front matter, contents, prefaces, footnotes, illustrations, publisher's ads, or a distributor's header and license. It converts the text to what a typewriter has: straight quotes, `--` for dashes, no italics, Greek spelled out in Latin letters. Verse keeps its line breaks. It checks each book's chapter count against `books.json` and stops if one is off.
 
 ## Run it locally
 

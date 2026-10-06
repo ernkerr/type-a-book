@@ -1,0 +1,313 @@
+{
+ "shelves": [
+  {
+   "name": "Adventure and science fiction",
+   "books": [
+    "time-machine",
+    "war-of-the-worlds",
+    "twenty-thousand-leagues",
+    "eighty-days",
+    "treasure-island",
+    "frankenstein",
+    "dracula",
+    "sherlock"
+   ]
+  },
+  {
+   "name": "Books everyone should read",
+   "books": [
+    "pride",
+    "gatsby",
+    "jane-eyre",
+    "great-expectations",
+    "dorian-gray",
+    "moby-dick",
+    "odyssey",
+    "meditations"
+   ]
+  },
+  {
+   "name": "Down the rabbit hole",
+   "books": [
+    "alice",
+    "looking-glass",
+    "oz",
+    "secret-garden"
+   ]
+  }
+ ],
+ "books": [
+  {
+   "id": "alice",
+   "title": "Alice's Adventures in Wonderland",
+   "spine": [
+    "Alice's Adventures",
+    "in Wonderland"
+   ],
+   "author": "Lewis Carroll",
+   "year": 1865,
+   "cloth": "#8b2a22",
+   "gilt": "#d9b464",
+   "emblem": "watch",
+   "words": 26309,
+   "chapters": 12
+  },
+  {
+   "id": "looking-glass",
+   "title": "Through the Looking-Glass",
+   "spine": [
+    "Through the",
+    "Looking-Glass"
+   ],
+   "author": "Lewis Carroll",
+   "year": 1871,
+   "cloth": "#2a5577",
+   "gilt": "#dcc07a",
+   "words": 29075,
+   "chapters": 12
+  },
+  {
+   "id": "oz",
+   "title": "The Wonderful Wizard of Oz",
+   "spine": [
+    "The Wonderful",
+    "Wizard of Oz"
+   ],
+   "author": "L. Frank Baum",
+   "year": 1900,
+   "cloth": "#2f6b3a",
+   "gilt": "#e2c56f",
+   "words": 39109,
+   "chapters": 24
+  },
+  {
+   "id": "secret-garden",
+   "title": "The Secret Garden",
+   "spine": [
+    "The Secret Garden"
+   ],
+   "author": "Frances Hodgson Burnett",
+   "year": 1911,
+   "cloth": "#5f7236",
+   "gilt": "#e8d79a",
+   "words": 80310,
+   "chapters": 27
+  },
+  {
+   "id": "time-machine",
+   "title": "The Time Machine",
+   "spine": [
+    "The Time Machine"
+   ],
+   "author": "H. G. Wells",
+   "year": 1895,
+   "cloth": "#2f4a5c",
+   "gilt": "#d6bb79",
+   "words": 32286,
+   "chapters": 17
+  },
+  {
+   "id": "war-of-the-worlds",
+   "title": "The War of the Worlds",
+   "spine": [
+    "The War",
+    "of the Worlds"
+   ],
+   "author": "H. G. Wells",
+   "year": 1898,
+   "cloth": "#5a1f1a",
+   "gilt": "#d9b464",
+   "words": 59738,
+   "chapters": 27
+  },
+  {
+   "id": "twenty-thousand-leagues",
+   "title": "Twenty Thousand Leagues Under the Sea",
+   "spine": [
+    "Twenty Thousand Leagues",
+    "Under the Sea"
+   ],
+   "author": "Jules Verne",
+   "year": 1870,
+   "cloth": "#1f4d4a",
+   "gilt": "#d8bd7c",
+   "words": 104045,
+   "chapters": 46
+  },
+  {
+   "id": "eighty-days",
+   "title": "Around the World in Eighty Days",
+   "spine": [
+    "Around the World",
+    "in Eighty Days"
+   ],
+   "author": "Jules Verne",
+   "translator": "George M. Towle",
+   "year": 1873,
+   "cloth": "#a0682a",
+   "gilt": "#2a1a0c",
+   "words": 62185,
+   "chapters": 37
+  },
+  {
+   "id": "treasure-island",
+   "title": "Treasure Island",
+   "spine": [
+    "Treasure Island"
+   ],
+   "author": "Robert Louis Stevenson",
+   "year": 1883,
+   "cloth": "#2d3b2a",
+   "gilt": "#d9b464",
+   "words": 67655,
+   "chapters": 34
+  },
+  {
+   "id": "frankenstein",
+   "title": "Frankenstein",
+   "spine": [
+    "Frankenstein"
+   ],
+   "author": "Mary Shelley",
+   "year": 1818,
+   "cloth": "#3a3d2c",
+   "gilt": "#cdb57a",
+   "words": 74919,
+   "chapters": 28
+  },
+  {
+   "id": "dracula",
+   "title": "Dracula",
+   "spine": [
+    "Dracula"
+   ],
+   "author": "Bram Stoker",
+   "year": 1897,
+   "cloth": "#1b1a1d",
+   "gilt": "#c43b2e",
+   "words": 160014,
+   "chapters": 27
+  },
+  {
+   "id": "sherlock",
+   "title": "The Adventures of Sherlock Holmes",
+   "spine": [
+    "The Adventures of",
+    "Sherlock Holmes"
+   ],
+   "author": "Arthur Conan Doyle",
+   "year": 1892,
+   "cloth": "#6b2b3a",
+   "gilt": "#dcc07a",
+   "words": 104347,
+   "chapters": 12
+  },
+  {
+   "id": "pride",
+   "title": "Pride and Prejudice",
+   "spine": [
+    "Pride and Prejudice"
+   ],
+   "author": "Jane Austen",
+   "year": 1813,
+   "cloth": "#d8ccb4",
+   "gilt": "#3a2a1e",
+   "words": 121571,
+   "chapters": 61
+  },
+  {
+   "id": "gatsby",
+   "title": "The Great Gatsby",
+   "spine": [
+    "The Great Gatsby"
+   ],
+   "author": "F. Scott Fitzgerald",
+   "year": 1925,
+   "cloth": "#13294b",
+   "gilt": "#e0c272",
+   "words": 48143,
+   "chapters": 9
+  },
+  {
+   "id": "jane-eyre",
+   "title": "Jane Eyre",
+   "spine": [
+    "Jane Eyre"
+   ],
+   "author": "Charlotte Bronte",
+   "year": 1847,
+   "cloth": "#4a2f45",
+   "gilt": "#d9b464",
+   "words": 184376,
+   "chapters": 38
+  },
+  {
+   "id": "great-expectations",
+   "title": "Great Expectations",
+   "spine": [
+    "Great Expectations"
+   ],
+   "author": "Charles Dickens",
+   "year": 1861,
+   "cloth": "#3e4f3a",
+   "gilt": "#d9b464",
+   "words": 184218,
+   "chapters": 59
+  },
+  {
+   "id": "dorian-gray",
+   "title": "The Picture of Dorian Gray",
+   "spine": [
+    "The Picture of",
+    "Dorian Gray"
+   ],
+   "author": "Oscar Wilde",
+   "year": 1890,
+   "cloth": "#d4c7a6",
+   "gilt": "#2b2622",
+   "words": 78503,
+   "chapters": 20
+  },
+  {
+   "id": "moby-dick",
+   "title": "Moby-Dick",
+   "spine": [
+    "Moby-Dick"
+   ],
+   "author": "Herman Melville",
+   "year": 1851,
+   "cloth": "#22364a",
+   "gilt": "#d9b464",
+   "words": 205860,
+   "chapters": 136
+  },
+  {
+   "id": "odyssey",
+   "title": "The Odyssey",
+   "spine": [
+    "The Odyssey"
+   ],
+   "author": "Homer",
+   "translator": "Samuel Butler",
+   "year": -700,
+   "cloth": "#8a4b22",
+   "gilt": "#1e140c",
+   "words": 117111,
+   "chapters": 24
+  },
+  {
+   "id": "meditations",
+   "title": "Meditations",
+   "spine": [
+    "Meditations"
+   ],
+   "author": "Marcus Aurelius",
+   "translator": "Meric Casaubon",
+   "year": 180,
+   "cloth": "#4d4438",
+   "gilt": "#d9c48e",
+   "words": 57307,
+   "chapters": 12
+  }
+ ]
+}

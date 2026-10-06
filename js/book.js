@@ -8,15 +8,26 @@ const VERSE_INDENT = 6;
 
 export const typable = (unit) => unit.kind === "para" || unit.kind === "verse";
 
+// Splits a chapter title into centered lines that fit the paper.
+function wrapWords(text, width) {
+  const out = [];
+  let line = "";
+  for (const word of text.split(" ")) {
+    if (line && line.length + 1 + word.length > width) {
+      out.push(line);
+      line = word;
+    } else {
+      line = line ? `${line} ${word}` : word;
+    }
+  }
+  if (line) out.push(line);
+  return out;
+}
+
 export function toUnits(book) {
   const units = [];
   book.chapters.forEach((chapter, ch) => {
-    units.push({
-      kind: "heading",
-      ch,
-      text: `CHAPTER ${chapter.number}.`,
-      sub: chapter.title,
-    });
+    units.push({ kind: "heading", ch, text: chapter.label, sub: chapter.title });
     for (const block of chapter.blocks) {
       if (block.type === "p") {
         units.push({ kind: "para", ch, text: block.text });
@@ -51,7 +62,9 @@ export function layout(units, cols) {
   units.forEach((unit, u) => {
     if (unit.kind === "heading") {
       lines.push({ u, auto: true, text: unit.text, center: true, newPage: true });
-      lines.push({ u, auto: true, text: unit.sub, center: true });
+      for (const part of wrapWords(unit.sub, cols - 8)) {
+        lines.push({ u, auto: true, text: part, center: true });
+      }
       blank(u);
       blank(u);
       return;
