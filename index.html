@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Type a Book</title>
+    <meta
+      name="description"
+      content="Pick a book off the shelf and type it on an old typewriter. You read it as you go."
+    />
+    <meta property="og:title" content="Type a Book" />
+    <meta
+      property="og:description"
+      content="Pick a book off the shelf and type it on an old typewriter. You read it as you go."
+    />
+    <meta name="theme-color" content="#1b1511" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=IM+Fell+English:ital@0;1&family=Special+Elite&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body>
+    <!-- The shelf -->
+    <main id="shelf" class="screen shelf-screen">
+      <header class="masthead">
+        <h1>Type a Book</h1>
+        <p>Pick a book off the shelf and type it on an old typewriter.<br />You read it as you go.</p>
+      </header>
+
+      <div class="bookcase">
+        <div class="books" id="books"></div>
+        <div class="board"></div>
+      </div>
+      <p class="note">More books soon.</p>
+    </main>
+
+    <!-- A book, pulled off the shelf -->
+    <div id="cover" class="cover-backdrop" hidden>
+      <div class="cover-dialog" role="dialog" aria-modal="true" aria-labelledby="cover-title">
+        <div class="cover" id="cover-art" aria-hidden="true"></div>
+        <div class="cover-info">
+          <h2 id="cover-title"></h2>
+          <p class="byline" id="cover-byline"></p>
+          <p class="facts" id="cover-facts"></p>
+          <p class="progress" id="cover-progress"></p>
+          <div class="actions">
+            <button type="button" class="btn primary" id="start">Start typing</button>
+            <button type="button" class="btn" id="restart" hidden>Start over</button>
+            <button type="button" class="btn quiet" id="close-cover">Back to the shelf</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- The typewriter -->
+    <main id="desk" class="screen desk-screen" hidden>
+      <header class="deskbar">
+        <button type="button" class="link" id="back">&larr; Shelf</button>
+        <p class="chapter" id="chapter"></p>
+        <div class="deskbar-right">
+          <p class="stats" id="stats" aria-live="off"></p>
+          <button type="button" class="link" id="sound" aria-pressed="true">Sound on</button>
+        </div>
+      </header>
+
+      <div class="stage" id="stage">
+        <div class="carriage" id="carriage">
+          <div class="feed" id="feed"><div class="paper" id="paper"></div></div>
+          <div class="platen" aria-hidden="true">
+            <span class="bail"></span>
+            <span class="knob left"></span>
+            <span class="knob right"></span>
+          </div>
+        </div>
+        <div class="guide" aria-hidden="true"></div>
+        <div class="machine" aria-hidden="true">
+          <div class="basket"></div>
+          <div class="plate">Type a Book</div>
+          <div class="keys" id="keys"></div>
+        </div>
+        <button type="button" class="tap" id="tap" hidden>Tap to type</button>
+      </div>
+
+      <p class="sr-only" id="now-reading" aria-live="polite"></p>
+      <textarea
+        id="input"
+        class="input"
+        aria-label="Type the line shown on the paper"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+      ></textarea>
+    </main>
+
+    <div id="done" class="cover-backdrop" hidden>
+      <div class="done-card" role="dialog" aria-modal="true" aria-labelledby="done-title">
+        <p class="the-end" id="done-title">The End</p>
+        <p id="done-text"></p>
+        <button type="button" class="btn primary" id="done-shelf">Back to the shelf</button>
+      </div>
+    </div>
+  </body>
+</html>

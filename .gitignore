@@ -1,0 +1,4 @@
+.DS_Store
+# Source texts keep their distributor's header and license; only the
+# prepared books/*.json are published.
+scripts/*.txt
