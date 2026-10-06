@@ -30,6 +30,7 @@
       <header class="masthead">
         <h1>Type a Book</h1>
         <p>Pick a book off the shelf and type it on an old typewriter.<br />You read it as you go.</p>
+        <button type="button" class="resume" id="resume" hidden></button>
       </header>
 
       <div class="shelves" id="shelves"></div>
@@ -66,20 +67,45 @@
       </header>
 
       <div class="stage" id="stage">
+        <div class="desktop" aria-hidden="true"></div>
+
+        <div class="stack empty" id="stack" aria-hidden="true">
+          <div class="sheets" id="stack-sheets"></div>
+          <p class="stack-label" id="stack-label"></p>
+        </div>
+
         <div class="carriage" id="carriage">
           <div class="feed" id="feed"><div class="paper" id="paper"></div></div>
           <div class="platen" aria-hidden="true">
             <span class="bail"></span>
             <span class="knob left"></span>
             <span class="knob right"></span>
+            <span class="lever" id="lever"></span>
           </div>
         </div>
         <div class="guide" aria-hidden="true"></div>
+
         <div class="machine" aria-hidden="true">
-          <div class="basket"></div>
+          <span class="spool left"></span>
+          <span class="spool right"></span>
+          <div class="basket" id="basket"></div>
+          <span class="bell" id="bell"></span>
           <div class="plate">Type a Book</div>
           <div class="keys" id="keys"></div>
         </div>
+
+        <aside class="hint" id="hint" hidden aria-labelledby="hint-title">
+          <p class="hint-title" id="hint-title">How to type a book</p>
+          <ul>
+            <li>Type the faint letters.</li>
+            <li>A wrong key strikes in red. Try again.</li>
+            <li>At the end of a line, the space returns the carriage.</li>
+            <li>At the end of a paragraph, press Return.</li>
+            <li>Esc takes you back to the shelf.</li>
+          </ul>
+          <button type="button" class="hint-close" id="hint-close">Got it</button>
+        </aside>
+
         <button type="button" class="tap" id="tap" hidden>Tap to type</button>
       </div>
 
@@ -95,11 +121,22 @@
       ></textarea>
     </main>
 
-    <div id="done" class="cover-backdrop" hidden>
-      <div class="done-card" role="dialog" aria-modal="true" aria-labelledby="done-title">
-        <p class="the-end" id="done-title">The End</p>
-        <p id="done-text"></p>
-        <button type="button" class="btn primary" id="done-shelf">Back to the shelf</button>
+    <!-- An index card for a finished chapter, or the whole book -->
+    <div id="card" class="card-backdrop" hidden>
+      <div class="index-card" role="dialog" aria-modal="true" aria-labelledby="card-title">
+        <p class="card-kicker" id="card-kicker"></p>
+        <h2 class="card-title" id="card-title"></h2>
+        <p class="stamp" id="card-stamp" aria-hidden="true"></p>
+        <dl class="card-stats">
+          <div><dt>Words typed</dt><dd id="card-words"></dd></div>
+          <div><dt>Time</dt><dd id="card-time"></dd></div>
+          <div><dt>Words a minute</dt><dd id="card-wpm"></dd></div>
+        </dl>
+        <div class="card-actions">
+          <button type="button" class="btn primary" id="card-next">Next chapter</button>
+          <button type="button" class="btn quiet" id="card-shelf">Back to the shelf</button>
+        </div>
+        <p class="card-tip" id="card-tip">Press Return to keep going.</p>
       </div>
     </div>
   </body>

@@ -12,11 +12,14 @@ const MARGIN = 5;
 const TOP = 3;
 const BOTTOM = 3;
 const BELL_AT = 8; // the bell rings this many characters before the margin
+const HINT_UNTIL = 40; // the how-to card leaves after this many right keys
+const BARS = 34; // typebars in the basket
 
 const $ = (sel) => document.querySelector(sel);
 const els = {
   shelf: $("#shelf"),
   shelves: $("#shelves"),
+  resume: $("#resume"),
   cover: $("#cover"),
   coverArt: $("#cover-art"),
   coverTitle: $("#cover-title"),
@@ -33,16 +36,31 @@ const els = {
   soundBtn: $("#sound"),
   stage: $("#stage"),
   carriage: $("#carriage"),
+  lever: $("#lever"),
   guide: $(".guide"),
   feed: $("#feed"),
   paper: $("#paper"),
+  basket: $("#basket"),
+  bell: $("#bell"),
   keys: $("#keys"),
+  stack: $("#stack"),
+  stackSheets: $("#stack-sheets"),
+  stackLabel: $("#stack-label"),
+  hint: $("#hint"),
+  hintClose: $("#hint-close"),
   tap: $("#tap"),
   input: $("#input"),
   reading: $("#now-reading"),
-  done: $("#done"),
-  doneText: $("#done-text"),
-  doneShelf: $("#done-shelf"),
+  card: $("#card"),
+  cardKicker: $("#card-kicker"),
+  cardTitle: $("#card-title"),
+  cardStamp: $("#card-stamp"),
+  cardWords: $("#card-words"),
+  cardTime: $("#card-time"),
+  cardWpm: $("#card-wpm"),
+  cardNext: $("#card-next"),
+  cardShelf: $("#card-shelf"),
+  cardTip: $("#card-tip"),
 };
 
 const store = {
@@ -63,6 +81,9 @@ const store = {
 };
 const saveKey = (id) => `type-a-book:${id}`;
 
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 // ---- State ----
 
 const loaded = new Map();
@@ -79,6 +100,10 @@ let size = { cols: 60, fs: 18, cw: 10.8, lh: 31, fixed: false };
 let bellRung = false;
 let finished = false;
 let session = { right: 0, wrong: 0, ms: 0, last: 0 };
+// This sitting's stretch of the current chapter, for its index card.
+let run = { ms: 0, right: 0, words: 0 };
+let cardMode = null; // "chapter" or "end" while an index card is up
+let hinted = store.get("type-a-book:hinted", false);
 
 // ---- Loading a book ----
 
@@ -113,17 +138,36 @@ function nextTypable(u) {
 }
 
 const percent = () => Math.floor(((before[pos.u] + pos.c) / total) * 100);
+const chapterOf = (u) => loaded.get(meta.id).chapters[units[u].ch];
 
+// Your place, plus what the shelf shows on the book's ribbon.
 function save() {
-  if (!meta) return;
+  if (!meta || !units.length) return;
   const prev = store.get(saveKey(meta.id), {});
-  store.set(saveKey(meta.id), { ...prev, u: pos.u, c: pos.c, finished });
+  store.set(saveKey(meta.id), {
+    ...prev,
+    u: pos.u,
+    c: pos.c,
+    finished,
+    percent: finished ? 100 : percent(),
+    chapter: pretty(chapterOf(pos.u).label),
+    at: Date.now(),
+  });
 }
 
-// ---- The shelf and the cover ----
+// "14%", or the chapter while it still rounds down to 0%.
+const where = (saved) =>
+  saved.percent > 0 ? `${saved.percent}%` : saved.chapter ?? "Started";
+
+const progressOf = (id) => {
+  const saved = store.get(saveKey(id), null);
+  return saved && (saved.finished || saved.percent > 0 || saved.c > 0) ? saved : null;
+};
+
+// ---- The shelf ----
 
 // Thicker books get thicker spines, and heights vary a little, the way a
-// real shelf does.
+// real shelf does. Books you've started wear a ribbon bookmark.
 function spine(entry) {
   const btn = document.createElement("button");
   btn.type = "button";
@@ -150,13 +194,25 @@ function spine(entry) {
     `--name-fs:${ns.toFixed(1)}px`,
   ].join(";");
   btn.dataset.id = entry.id;
-  btn.setAttribute("aria-label", `${entry.title} by ${entry.author}`);
+
+  const saved = progressOf(entry.id);
+  const state = saved ? (saved.finished ? "typed" : `${where(saved)} typed so far`) : "";
+  btn.setAttribute("aria-label", `${entry.title} by ${entry.author}${state ? `, ${state}` : ""}`);
+  const tip = saved
+    ? saved.finished
+      ? "Typed"
+      : saved.percent > 0 && saved.chapter
+        ? `${saved.percent}% · ${saved.chapter}`
+        : where(saved)
+    : "";
   btn.innerHTML = `
+    ${saved ? `<span class="ribbon${saved.finished ? " done" : ""}" aria-hidden="true"></span>` : ""}
+    ${saved ? `<span class="tip" aria-hidden="true">${tip}</span>` : ""}
     <span class="band top"></span>
     <span class="spine-title">${entry.spine.map((l) => `<span>${l}</span>`).join("")}</span>
     <span class="spine-author">${surname}</span>
     <span class="band bottom"></span>`;
-  btn.addEventListener("click", () => showCover(entry));
+  btn.addEventListener("click", () => pick(entry));
   return btn;
 }
 
@@ -178,7 +234,33 @@ function buildShelves() {
     }
     els.shelves.append(section);
   }
+  buildResume();
 }
+
+// The book you typed in most recently, one click from the top of the page.
+function buildResume() {
+  let latest = null;
+  for (const entry of catalog.books) {
+    const saved = progressOf(entry.id);
+    if (saved && !saved.finished && (!latest || (saved.at ?? 0) > (latest.saved.at ?? 0))) {
+      latest = { entry, saved };
+    }
+  }
+  els.resume.hidden = !latest;
+  if (!latest) return;
+  els.resume.innerHTML = `<span class="resume-label">Keep typing</span> <em>${latest.entry.title}</em> <span class="resume-pct">${where(latest.saved)}</span>`;
+  els.resume.onclick = () => pick(latest.entry);
+}
+
+// Picking a book: it slides up off the shelf, then its cover comes forward.
+async function pick(entry) {
+  const el = els.shelves.querySelector(`.spine[data-id="${entry.id}"]`);
+  el?.classList.add("pulled");
+  await Promise.all([load(entry.id), wait(reduced() ? 0 : 280)]);
+  showCover(entry, el);
+}
+
+// ---- The cover ----
 
 const WATCH = `
   <svg class="watch" viewBox="0 0 80 100" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
@@ -200,8 +282,15 @@ const RULE = `
 
 const EMBLEMS = { watch: WATCH };
 
+// The front cover, and the title page under it that shows when it opens.
 function coverArt(entry) {
   return `
+    <div class="title-page">
+      <p class="tp-title">${entry.title}</p>
+      <p class="tp-by">by</p>
+      <p class="tp-author">${entry.author}</p>
+      ${RULE}
+    </div>
     <div class="cloth" style="--cloth:${entry.cloth};--gilt:${entry.gilt}">
       <div class="frame">
         ${entry.spine.length > 1 ? `<p class="cover-small">${entry.spine[0]}</p>` : ""}
@@ -212,11 +301,11 @@ function coverArt(entry) {
     </div>`;
 }
 
-let opener = null;
+let pulledSpine = null;
 
-async function showCover(entry) {
-  opener = document.activeElement;
-  const book = await load(entry.id);
+function showCover(entry, spineEl) {
+  pulledSpine = spineEl;
+  const book = loaded.get(entry.id);
   els.coverArt.innerHTML = coverArt(entry);
   els.coverTitle.textContent = entry.title;
   els.coverByline.textContent = entry.translator
@@ -246,7 +335,24 @@ async function showCover(entry) {
 
 function hideCover() {
   els.cover.hidden = true;
-  opener?.focus?.();
+  pulledSpine?.classList.remove("pulled");
+  pulledSpine?.focus();
+}
+
+// The cover swings open to the title page, and the desk takes over.
+async function openBook() {
+  sound.wake();
+  if (!reduced()) {
+    els.coverArt.classList.add("opening");
+    await wait(720);
+    els.cover.classList.add("closing");
+    await wait(220);
+  }
+  els.cover.hidden = true;
+  els.cover.classList.remove("closing");
+  els.coverArt.classList.remove("opening");
+  pulledSpine?.classList.remove("pulled");
+  toDesk(true);
 }
 
 els.closeCover.addEventListener("click", hideCover);
@@ -254,12 +360,11 @@ els.cover.addEventListener("click", (e) => {
   if (e.target === els.cover) hideCover();
 });
 els.start.addEventListener("click", () => {
-  els.cover.hidden = true;
   if (finished || store.get(saveKey(meta.id), {}).finished) {
     pos = first();
     finished = false;
   }
-  toDesk();
+  openBook();
 });
 // Starting over takes two clicks, so a stray one doesn't lose your place.
 els.restart.addEventListener("click", () => {
@@ -271,40 +376,48 @@ els.restart.addEventListener("click", () => {
   pos = first();
   finished = false;
   save();
-  els.cover.hidden = true;
-  toDesk();
+  openBook();
 });
 
 // ---- The desk ----
 
-function toDesk() {
+function toDesk(roll = false) {
   els.shelf.hidden = true;
   els.desk.hidden = false;
   session = { right: 0, wrong: 0, ms: 0, last: 0 };
+  run = { ms: 0, right: 0, words: 0 };
+  cardMode = null;
   bellRung = false;
   measure();
   render();
   updateBar();
+  updateStack();
+  els.hint.hidden = hinted;
+  if (roll) rollIn();
   focusInput();
 }
 
 function toShelf() {
   save();
   els.desk.hidden = true;
-  els.done.hidden = true;
+  els.card.hidden = true;
+  cardMode = null;
   els.shelf.hidden = false;
+  buildShelves();
   els.shelves.querySelector(`.spine[data-id="${meta?.id}"]`)?.focus();
 }
 
 els.back.addEventListener("click", toShelf);
-els.doneShelf.addEventListener("click", toShelf);
+els.cardShelf.addEventListener("click", toShelf);
 
 const coarse = window.matchMedia("(pointer: coarse)");
 function focusInput() {
   els.input.focus({ preventScroll: true });
   els.tap.hidden = !coarse.matches || document.activeElement === els.input;
 }
-els.stage.addEventListener("pointerdown", () => setTimeout(focusInput));
+els.stage.addEventListener("pointerdown", (e) => {
+  if (!e.target.closest("button")) setTimeout(focusInput);
+});
 els.tap.addEventListener("click", focusInput);
 els.input.addEventListener("blur", () => {
   if (!els.desk.hidden) els.tap.hidden = !coarse.matches;
@@ -321,6 +434,23 @@ function setSound(value) {
 setSound(soundOn);
 els.soundBtn.addEventListener("click", () => {
   setSound(!soundOn);
+  focusInput();
+});
+
+// The first time at the typewriter, an index card explains the rules. It
+// goes once you've got the hang of it, or when you close it.
+function hideHint() {
+  if (els.hint.hidden) return;
+  hinted = true;
+  store.set("type-a-book:hinted", true);
+  els.hint.classList.add("leaving");
+  setTimeout(() => {
+    els.hint.hidden = true;
+    els.hint.classList.remove("leaving");
+  }, 320);
+}
+els.hintClose.addEventListener("click", () => {
+  hideHint();
   focusInput();
 });
 
@@ -365,6 +495,7 @@ window.addEventListener("resize", () => {
     if (els.desk.hidden) return;
     measure();
     render();
+    updateStack();
   }, 150);
 });
 
@@ -450,17 +581,63 @@ function place(returning) {
   els.paper.style.transform = `translateY(${y}px)`;
 }
 
-// A finished sheet lifts out and a fresh one rolls in.
-function turnPage() {
-  const old = els.paper.cloneNode(true);
-  old.removeAttribute("id");
-  els.feed.prepend(old);
-  requestAnimationFrame(() => old.classList.add("leaving"));
-  setTimeout(() => old.remove(), 900);
-  render();
-  els.paper.classList.add("arriving");
-  requestAnimationFrame(() => requestAnimationFrame(() => els.paper.classList.remove("arriving")));
+// A fresh sheet rolls up out of the machine.
+function rollIn() {
   sound.paper();
+  if (reduced()) return;
+  els.paper.classList.add("arriving");
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      els.paper.classList.remove("arriving");
+      els.paper.classList.add("rolling");
+      setTimeout(() => els.paper.classList.remove("rolling"), 900);
+    }),
+  );
+}
+
+// A finished sheet comes out of the machine and lands on the stack of
+// typed pages beside it (or lifts away when there's no room for a stack).
+function turnPage() {
+  if (!reduced()) {
+    const stage = els.stage.getBoundingClientRect();
+    const sheet = els.paper.getBoundingClientRect();
+    const feed = els.feed.getBoundingClientRect();
+    const old = els.paper.cloneNode(true);
+    old.removeAttribute("id");
+    old.classList.add("flying");
+    old.style.left = `${sheet.left - stage.left}px`;
+    old.style.top = `${sheet.top - stage.top}px`;
+    old.style.transform = "none";
+    old.style.clipPath = `inset(0 0 ${Math.max(0, sheet.bottom - feed.bottom)}px 0)`;
+    els.stage.append(old);
+    const toStack = getComputedStyle(els.stack).display !== "none";
+    const target = els.stack.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      if (toStack) {
+        const dx = target.left + target.width / 2 - (sheet.left + sheet.width / 2);
+        const dy = target.top + target.height / 2 - (sheet.top + sheet.height / 2);
+        old.style.transform = `translate(${dx}px, ${dy}px) scale(${target.width / sheet.width}) rotate(-5deg)`;
+      } else {
+        old.style.transform = "translateY(-120vh) rotate(-3deg)";
+      }
+      old.style.opacity = "0";
+    });
+    setTimeout(() => old.remove(), 850);
+  }
+  render();
+  rollIn();
+  setTimeout(updateStack, reduced() ? 0 : 700);
+}
+
+// The stack of sheets you've typed in this book, on the desk to the left.
+function updateStack() {
+  const pages = lines[at]?.page ?? 0;
+  els.stack.classList.toggle("empty", pages === 0);
+  els.stackSheets.innerHTML = Array.from(
+    { length: Math.min(pages, 7) },
+    (_, i) => `<span class="sheet" style="--i:${i};--r:${((i * 37) % 9) - 4}deg"></span>`,
+  ).join("");
+  els.stackLabel.textContent = `${pages} ${pages === 1 ? "page" : "pages"}`;
 }
 
 // For screen readers: the line you're on.
@@ -484,9 +661,7 @@ function pretty(text) {
 }
 
 function updateBar() {
-  const unit = units[pos.u];
-  const book = loaded.get(meta.id);
-  const ch = book.chapters[unit.ch];
+  const ch = chapterOf(pos.u);
   els.chapter.textContent = ch.title ? `${pretty(ch.label)}  ·  ${pretty(ch.title)}` : pretty(ch.label);
   const minutes = session.ms / 60000;
   const wpm = session.right >= 10 && minutes > 0 ? Math.round(session.right / 5 / minutes) : null;
@@ -499,7 +674,7 @@ function updateBar() {
   ].join("  ·  ");
 }
 
-// ---- The keyboard you see ----
+// ---- The machine ----
 
 const ROWS = [
   ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-"],
@@ -513,14 +688,25 @@ const SHIFTED = {
   "(": "9", ")": "0", _: "-", ":": ";", '"': "'", "<": ",", ">": ".", "?": "/",
 };
 
-function buildKeys() {
+function buildMachine() {
   els.keys.innerHTML = ROWS.map(
     (row, r) =>
       `<div class="row r${r}">${row
         .map((k) => `<span class="key k-${k.length > 1 ? k : "char"}" data-k="${k}">${k.length > 1 ? k : k.toUpperCase()}</span>`)
         .join("")}</div>`,
   ).join("");
+  // The typebars fan out in a half circle under the type guide.
+  els.basket.innerHTML = Array.from(
+    { length: BARS },
+    (_, i) => `<span class="bar" style="--a:${(-82 + (164 * i) / (BARS - 1)).toFixed(1)}deg"></span>`,
+  ).join("");
 }
+
+const replay = (el, cls) => {
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+};
 
 function press(ch) {
   let k;
@@ -537,12 +723,16 @@ function press(ch) {
     key.classList.add("down");
     setTimeout(() => key.classList.remove("down"), 110);
   }
+  // Each letter has its own typebar, which swings up to strike the paper.
+  if (ch !== " " && ch !== "\n") {
+    replay(els.basket.children[(ch.toLowerCase().charCodeAt(0) * 7) % BARS], "strike");
+  }
 }
 
 // ---- Typing ----
 
 function type(ch) {
-  if (finished || els.desk.hidden || !units.length) return;
+  if (finished || cardMode || els.desk.hidden || !units.length) return;
   sound.wake();
   press(ch);
 
@@ -559,8 +749,11 @@ function type(ch) {
     return;
   }
   session.right += 1;
+  if ((ch === " " || ch === "\n") && pos.c > 0 && text[pos.c - 1] !== " ") run.words += 1;
+  if (!hinted && session.right >= HINT_UNTIL) hideHint();
 
   const from = at;
+  const fromChapter = units[pos.u].ch;
   if (pos.c < text.length) {
     pos.c += 1;
   } else {
@@ -580,11 +773,13 @@ function type(ch) {
     if (!bellRung && col === size.cols - BELL_AT && line.end - line.start + line.indent > col) {
       bellRung = true;
       sound.bell();
+      replay(els.bell, "ring");
     }
   } else {
     bellRung = false;
     if (ch === " ") sound.space();
     sound.carriage();
+    replay(els.lever, "pull");
     if (lines[at].page !== lines[from].page) {
       turnPage();
     } else {
@@ -598,6 +793,7 @@ function type(ch) {
       describe();
     }
     save();
+    if (units[pos.u].ch !== fromChapter) chapterDone(fromChapter);
   }
   if (session.right % 25 === 0) save();
   updateBar();
@@ -609,21 +805,65 @@ function miss(ch) {
   const cell = els.paper.querySelector(".now");
   if (!cell) return;
   cell.dataset.miss = ch === "\n" ? "¶" : ch === " " ? "_" : ch;
-  cell.classList.remove("missed");
-  void cell.offsetWidth;
-  cell.classList.add("missed");
+  replay(cell, "missed");
 }
+
+// ---- Index cards: a finished chapter, and the end of the book ----
+
+const today = () =>
+  new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+function fillCard() {
+  const minutes = (session.ms - run.ms) / 60000;
+  const right = session.right - run.right;
+  els.cardWords.textContent = run.words.toLocaleString();
+  els.cardTime.textContent = minutes < 1 ? "< 1 min" : `${Math.round(minutes)} min`;
+  els.cardWpm.textContent = minutes >= 0.25 ? String(Math.round(right / 5 / minutes)) : "--";
+  els.cardStamp.innerHTML = `Typed<small>${today()}</small>`;
+}
+
+function chapterDone(ch) {
+  const chapter = loaded.get(meta.id).chapters[ch];
+  cardMode = "chapter";
+  fillCard();
+  els.cardKicker.textContent = pretty(chapter.label);
+  els.cardTitle.textContent = chapter.title ? pretty(chapter.title) : meta.title;
+  els.cardNext.hidden = false;
+  els.cardNext.textContent = "Next chapter";
+  els.cardTip.hidden = false;
+  setTimeout(() => {
+    if (cardMode !== "chapter") return;
+    els.card.hidden = false;
+    els.cardNext.focus({ preventScroll: true });
+  }, reduced() ? 0 : 750);
+}
+
+function closeCard() {
+  if (cardMode !== "chapter") return;
+  cardMode = null;
+  els.card.hidden = true;
+  run = { ms: session.ms, right: session.right, words: 0 };
+  session.last = 0;
+  focusInput();
+}
+els.cardNext.addEventListener("click", closeCard);
 
 function finish() {
   finished = true;
   save();
   sound.bell();
-  const minutes = session.ms / 60000;
-  const wpm = minutes > 0 ? Math.round(session.right / 5 / minutes) : 0;
-  els.doneText.textContent = `You typed ${meta.title} by ${meta.author}.${wpm ? ` Your last stretch ran at ${wpm} words a minute.` : ""}`;
-  els.done.hidden = false;
-  els.doneShelf.focus();
+  replay(els.bell, "ring");
+  cardMode = "end";
+  fillCard();
+  els.cardKicker.textContent = "The End";
+  els.cardTitle.textContent = meta.title;
+  els.cardNext.hidden = true;
+  els.cardTip.hidden = true;
+  els.card.hidden = false;
+  els.cardShelf.focus();
 }
+
+// ---- Keys ----
 
 // Phones type with smart punctuation, so curly quotes and long dashes are
 // turned back into what the typewriter has.
@@ -636,11 +876,19 @@ const plain = (s) =>
     .replace(/\r/g, "\n");
 
 window.addEventListener("keydown", (e) => {
-  if (els.desk.hidden || !els.done.hidden) {
-    if (e.key === "Escape" && !els.cover.hidden) hideCover();
+  if (!els.cover.hidden) {
+    if (e.key === "Escape") hideCover();
     return;
   }
+  if (els.desk.hidden) return;
   if (e.key === "Escape") return toShelf();
+  if (cardMode) {
+    if (cardMode === "chapter" && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      closeCard();
+    }
+    return;
+  }
   if (e.metaKey || e.ctrlKey || e.altKey || e.isComposing) return;
   if (e.target instanceof HTMLButtonElement) return;
   let ch = null;
@@ -655,6 +903,7 @@ window.addEventListener("keydown", (e) => {
 els.input.addEventListener("input", () => {
   const value = els.input.value;
   els.input.value = "";
+  if (cardMode === "chapter") return closeCard();
   for (const c of plain(value)) type(c);
 });
 
@@ -664,7 +913,7 @@ document.addEventListener("visibilitychange", () => {
 
 // ---- Start ----
 
-buildKeys();
+buildMachine();
 fetch("books/index.json")
   .then((res) => res.json())
   .then((data) => {
